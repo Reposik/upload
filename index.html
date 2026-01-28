@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>LH UPLOAD | DISTRIBUTION SYSTEM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        :root {
+            --accent: #0077ff;
+            --bg: #00050a;
+            --side: #000c1a;
+            --font: 'Dela Gothic One', cursive;
+            --spotify: #1DB954; --apple: #fc3c44; --yandex: #ffcc00; --vk: #0077ff; --sc: #ff5500;
+        }
+        * { box-sizing: border-box; font-family: var(--font); transition: 0.3s; }
+        body { margin: 0; background: var(--bg); color: #fff; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 300px; background: var(--side); border-right: 2px solid var(--accent); display: flex; flex-direction: column; padding: 20px; }
+        .logo { color: var(--accent); font-size: 22px; margin-bottom: 30px; text-shadow: 0 0 10px var(--accent); text-align: center; }
+        .nav-btn { padding: 12px; margin: 5px 0; border: 1px solid transparent; cursor: pointer; font-size: 11px; display: flex; align-items: center; gap: 10px; border-radius: 5px; }
+        .nav-btn:hover { border-color: var(--accent); background: rgba(0,119,255,0.1); }
+        .nav-btn.active { background: var(--accent); color: #000; }
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .upload-card { max-width: 800px; margin: 0 auto; background: #000; border: 2px solid #333; padding: 30px; border-radius: 15px; }
+        h2 { margin-top: 0; font-size: 24px; color: var(--active-color); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .input-box { display: flex; flex-direction: column; gap: 8px; }
+        label { font-size: 9px; opacity: 0.7; }
+        input { background: #111; border: 1px solid #444; padding: 12px; color: #fff; outline: none; border-radius: 5px; font-size: 12px; }
+        .btn-upload { grid-column: span 2; margin-top: 20px; padding: 15px; border: none; background: var(--active-color); color: #000; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .btn-upload:disabled { opacity: 0.5; }
+        #status { margin-top: 20px; font-size: 12px; text-align: center; color: var(--active-color); }
+    </style>
+</head>
+<body class="theme-spotify">
+
+    <aside class="sidebar">
+        <div class="logo">LH UPLOAD</div>
+        <div class="nav-btn active" onclick="setTheme('spotify')">🎧 SPOTIFY</div>
+        <div class="nav-btn" onclick="setTheme('apple')">🍎 APPLE MUSIC</div>
+        <div class="nav-btn" onclick="setTheme('yandex')">🟡 YANDEX MUSIC</div>
+        <div class="nav-btn" onclick="setTheme('vk')">🟦 VK MUSIC</div>
+        <div class="nav-btn" onclick="setTheme('soundcloud')">🟠 SOUNDCLOUD</div>
+        <div class="nav-btn" onclick="setTheme('playmus')">▶️ PLAYMUS</div>
+    </aside>
+
+    <main class="main-content">
+        <div class="upload-card">
+            <h2 id="platform-name">SPOTIFY UPLOADER</h2>
+            <form id="upload-form">
+                <div class="form-grid" id="form-fields"></div>
+                <button type="submit" class="btn-upload" id="submit-btn">SEND TO MODERATION</button>
+            </form>
+            <div id="status"></div>
+        </div>
+    </main>
+
+    <script>
+        // ТВОИ КЛЮЧИ
+        emailjs.init("vCgneovrif0lZE4dgGiQ");
+
+        let currentPlatform = 'spotify';
+
+        const forms = {
+            standard: `
+                <div class="input-box"><label>TRACK NAME</label><input name="track_name" required></div>
+                <div class="input-box"><label>ARTIST NAME</label><input name="artist" required></div>
+                <div class="input-box"><label>GENRE</label><input name="genre" required></div>
+                <div class="input-box"><label>LABEL NAME</label><input name="label" required></div>
+                <div class="input-box" style="grid-column: span 2;"><label>DISTRIBUTOR</label><input name="dist" required></div>
+            `,
+            playmus: `
+                <div class="input-box"><label>TRACK NAME</label><input name="track_name" required></div>
+                <div class="input-box"><label>ARTIST NAME</label><input name="artist" required></div>
+                <div class="input-box" style="grid-column: span 2;"><label>YT LINK</label><input name="yt_link" required></div>
+            `
+        };
+
+        function setTheme(p) {
+            currentPlatform = p;
+            document.body.className = 'theme-' + p;
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById('platform-name').innerText = p.toUpperCase() + " UPLOADER";
+            document.getElementById('form-fields').innerHTML = (p === 'playmus') ? forms.playmus : forms.standard;
+        }
+
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            status.innerText = "ОТПРАВКА НА СЕРВЕР LH RECORDS...";
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            const params = {
+                platform: currentPlatform.toUpperCase(),
+                track_name: data.track_name,
+                artist: data.artist,
+                label: data.label || "LH RECORDS",
+                info: Object.entries(data).map(([k, v]) => `${k}: ${v}`).join('\n')
+            };
+
+            emailjs.send('n72jxy8HHbc81', 'template_gombkgj', params)
+                .then(() => {
+                    status.innerText = "УСПЕШНО! ТРЕК УЛЕТЕЛ НА МОДЕРАЦИЮ.";
+                    status.style.color = "#00ff00";
+                    btn.disabled = false;
+                }, (err) => {
+                    status.innerText = "ОШИБКА: " + err.text;
+                    status.style.color = "red";
+                    btn.disabled = false;
+                });
+        });
+
+        window.onload = () => setTheme('spotify');
+    </script>
+</body>
+</html>
