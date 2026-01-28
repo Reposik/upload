@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>LH UPLOAD | DISTRIBUTION SYSTEM</title>
+    <title>LH UPLOAD | DRIVE DISTRIBUTION</title>
     <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
@@ -13,23 +13,37 @@
             --font: 'Dela Gothic One', cursive;
             --spotify: #1DB954; --apple: #fc3c44; --yandex: #ffcc00; --vk: #0077ff; --sc: #ff5500;
         }
+
         * { box-sizing: border-box; font-family: var(--font); transition: 0.3s; }
         body { margin: 0; background: var(--bg); color: #fff; display: flex; height: 100vh; overflow: hidden; }
+
+        /* САЙДБАР */
         .sidebar { width: 300px; background: var(--side); border-right: 2px solid var(--accent); display: flex; flex-direction: column; padding: 20px; }
         .logo { color: var(--accent); font-size: 22px; margin-bottom: 30px; text-shadow: 0 0 10px var(--accent); text-align: center; }
+        
         .nav-btn { padding: 12px; margin: 5px 0; border: 1px solid transparent; cursor: pointer; font-size: 11px; display: flex; align-items: center; gap: 10px; border-radius: 5px; }
         .nav-btn:hover { border-color: var(--accent); background: rgba(0,119,255,0.1); }
         .nav-btn.active { background: var(--accent); color: #000; }
+
+        /* КОНТЕНТ */
         .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-        .upload-card { max-width: 800px; margin: 0 auto; background: #000; border: 2px solid #333; padding: 30px; border-radius: 15px; }
-        h2 { margin-top: 0; font-size: 24px; color: var(--active-color); }
+        .upload-card { max-width: 850px; margin: 0 auto; background: #000; border: 2px solid #333; padding: 30px; border-radius: 15px; box-shadow: 0 0 40px rgba(0,0,0,0.8); }
+        
+        h2 { margin-top: 0; font-size: 24px; color: var(--active-color); text-shadow: 0 0 5px var(--active-color); }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        
         .input-box { display: flex; flex-direction: column; gap: 8px; }
-        label { font-size: 9px; opacity: 0.7; }
+        label { font-size: 9px; opacity: 0.7; letter-spacing: 1px; }
         input { background: #111; border: 1px solid #444; padding: 12px; color: #fff; outline: none; border-radius: 5px; font-size: 12px; }
-        .btn-upload { grid-column: span 2; margin-top: 20px; padding: 15px; border: none; background: var(--active-color); color: #000; cursor: pointer; font-size: 16px; font-weight: bold; }
-        .btn-upload:disabled { opacity: 0.5; }
-        #status { margin-top: 20px; font-size: 12px; text-align: center; color: var(--active-color); }
+        input:focus { border-color: var(--active-color); box-shadow: 0 0 10px var(--active-color); }
+        input::placeholder { color: #333; }
+
+        .btn-upload { grid-column: span 2; margin-top: 20px; padding: 18px; border: none; background: var(--active-color); color: #000; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .btn-upload:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        #status { margin-top: 20px; font-size: 12px; text-align: center; color: var(--active-color); font-weight: bold; }
+        
+        .drive-notice { grid-column: span 2; font-size: 10px; color: #888; border: 1px dashed #333; padding: 10px; border-radius: 5px; text-align: center; }
     </style>
 </head>
 <body class="theme-spotify">
@@ -48,31 +62,37 @@
         <div class="upload-card">
             <h2 id="platform-name">SPOTIFY UPLOADER</h2>
             <form id="upload-form">
-                <div class="form-grid" id="form-fields"></div>
-                <button type="submit" class="btn-upload" id="submit-btn">SEND TO MODERATION</button>
+                <div class="form-grid" id="form-fields">
+                    </div>
+                <button type="submit" class="btn-upload" id="submit-btn">ОТПРАВИТЬ НА LH RECORDS</button>
             </form>
             <div id="status"></div>
         </div>
     </main>
 
     <script>
-        // ТВОИ КЛЮЧИ
+        // ИНИЦИАЛИЗАЦИЯ
         emailjs.init("vCgneovrif0lZE4dgGiQ");
 
         let currentPlatform = 'spotify';
 
         const forms = {
             standard: `
-                <div class="input-box"><label>TRACK NAME</label><input name="track_name" required></div>
-                <div class="input-box"><label>ARTIST NAME</label><input name="artist" required></div>
-                <div class="input-box"><label>GENRE</label><input name="genre" required></div>
-                <div class="input-box"><label>LABEL NAME</label><input name="label" required></div>
-                <div class="input-box" style="grid-column: span 2;"><label>DISTRIBUTOR</label><input name="dist" required></div>
+                <div class="drive-notice">ЗАГРУЗИТЕ ФАЙЛЫ НА GOOGLE DRIVE И ВСТАВЬТЕ ССЫЛКИ НИЖЕ</div>
+                <div class="input-box"><label>TRACK NAME</label><input name="track_name" placeholder="7 WEEKS FUNK" required></div>
+                <div class="input-box"><label>ARTIST NAME</label><input name="artist" placeholder="AZER" required></div>
+                <div class="input-box"><label>GOOGLE DRIVE LINK (WAV)</label><input name="wav_link" placeholder="https://drive.google.com/..." required></div>
+                <div class="input-box"><label>GOOGLE DRIVE LINK (JPG 3000x3000px)</label><input name="cover_link" placeholder="https://drive.google.com/..." required></div>
+                <div class="input-box"><label>GENRE</label><input name="genre" placeholder="Phonk / Hip-Hop" required></div>
+                <div class="input-box"><label>LABEL NAME</label><input name="label" placeholder="LH RECORDS" required></div>
+                <div class="input-box" style="grid-column: span 2;"><label>DISTRIBUTOR NAME</label><input name="dist" placeholder="DistroKid / ONE RPM" required></div>
             `,
             playmus: `
+                <div class="drive-notice">ДЛЯ PLAYMUS ТРЕБУЕТСЯ ССЫЛКА НА YT И ОБЛОЖКА</div>
                 <div class="input-box"><label>TRACK NAME</label><input name="track_name" required></div>
                 <div class="input-box"><label>ARTIST NAME</label><input name="artist" required></div>
-                <div class="input-box" style="grid-column: span 2;"><label>YT LINK</label><input name="yt_link" required></div>
+                <div class="input-box" style="grid-column: span 2;"><label>YT VIDEO LINK</label><input name="yt_link" placeholder="https://youtube.com/..." required></div>
+                <div class="input-box" style="grid-column: span 2;"><label>COVER LINK (1500x1500px)</label><input name="cover_link" placeholder="https://drive.google.com/..." required></div>
             `
         };
 
@@ -83,6 +103,7 @@
             event.currentTarget.classList.add('active');
             document.getElementById('platform-name').innerText = p.toUpperCase() + " UPLOADER";
             document.getElementById('form-fields').innerHTML = (p === 'playmus') ? forms.playmus : forms.standard;
+            document.getElementById('status').innerText = "";
         }
 
         document.getElementById('upload-form').addEventListener('submit', function(e) {
@@ -91,31 +112,36 @@
             const status = document.getElementById('status');
             
             btn.disabled = true;
-            status.innerText = "ОТПРАВКА НА СЕРВЕР LH RECORDS...";
+            status.innerText = "ПОДКЛЮЧЕНИЕ К СЕРВЕРУ LH RECORDS...";
 
             const formData = new FormData(this);
             const data = Object.fromEntries(formData.entries());
             
+            // Собираем все данные для поля {{info}} в твоем шаблоне
+            const fullInfo = Object.entries(data).map(([k, v]) => `${k.toUpperCase()}: ${v}`).join('\n');
+
             const params = {
                 platform: currentPlatform.toUpperCase(),
                 track_name: data.track_name,
                 artist: data.artist,
-                label: data.label || "LH RECORDS",
-                info: Object.entries(data).map(([k, v]) => `${k}: ${v}`).join('\n')
+                label: data.label || "PLAYMUS CLOUD",
+                info: fullInfo
             };
 
             emailjs.send('n72jxy8HHbc81', 'template_gombkgj', params)
                 .then(() => {
-                    status.innerText = "УСПЕШНО! ТРЕК УЛЕТЕЛ НА МОДЕРАЦИЮ.";
+                    status.innerText = "ГОТОВО! ДАННЫЕ ОТПРАВЛЕНЫ. ПРОВЕРЯЙ ПОЧТУ.";
                     status.style.color = "#00ff00";
                     btn.disabled = false;
+                    this.reset();
                 }, (err) => {
-                    status.innerText = "ОШИБКА: " + err.text;
+                    status.innerText = "ОШИБКА ОТПРАВКИ: " + err.text;
                     status.style.color = "red";
                     btn.disabled = false;
                 });
         });
 
+        // Инициализация
         window.onload = () => setTheme('spotify');
     </script>
 </body>
